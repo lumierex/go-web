@@ -115,6 +115,11 @@ func main() {
 		})
 	}
 
+	// 静态资源文件
+	// 将磁盘上的文件root映射到relativePath上
+	//r.Static("/asset", "D:\\code\\react\\jdme-otp" )
+	//r.Static("/asset", "./" )
+	//r.Static("/asset", "D:/code/react/jdme-otp")
 	_ = r.Run(":9999")
 
 }

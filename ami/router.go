@@ -73,6 +73,8 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 				params[part[1:]] = searchParts[i]
 			}
 		}
+
+		fmt.Printf("getRoute params %v", params)
 		return n, params
 	}
 
