@@ -39,6 +39,12 @@ type (
 	}
 )
 
+func Default() *Engine {
+	engine := New()
+	engine.Use(Logger(), Recovery())
+	return engine
+}
+
 // 引擎构造函数
 func New() *Engine {
 	engine := &Engine{router: newRouter()}
