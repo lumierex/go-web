@@ -2,10 +2,17 @@ package main
 
 import (
 	"ami"
+	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"time"
 )
+
+type student struct {
+	Name string
+	Age  int8
+}
 
 func main() {
 	//r := ami.New()
@@ -101,9 +108,39 @@ func main() {
 	// 中间件
 	r := ami.New()
 	r.Use(ami.Logger())
+	//
+	r.SetFuncMap(template.FuncMap{
+		"formatAsDate": formatAsDate,
+	})
 
+	r.LoadHTMLGlob("templates/*")
+	r.Static("/assets", "./static")
+
+	s1 := &student{
+		Name: "min",
+		Age:  12,
+	}
+
+	s2 := &student{
+		Name: "wei",
+		Age:  11,
+	}
 	r.GET("/", func(c *ami.Context) {
-		c.HTML(http.StatusOK, "<h1>Hello AMI</h1>")
+		c.HTML(http.StatusOK, "css.tmpl", nil)
+	})
+	r.GET("/students", func(c *ami.Context) {
+		c.HTML(http.StatusOK, "arr.tmpl", ami.H{
+			"title":  "ami",
+			"stuArr": [2]*student{s1, s2},
+		})
+	})
+
+	r.GET("/date", func(c *ami.Context) {
+		c.HTML(http.StatusOK, "custom_func.tmpl", ami.H{
+			"title": "ami",
+			"now":   time.Date(2020, 8, 17, 0, 0, 0, 0, time.UTC),
+			//"now", time.Date(2020, 08, 17, 0, 0, 0, 0, time.UTC):
+		})
 	})
 
 	v2 := r.Group("/v2")
@@ -133,4 +170,9 @@ func onlyForR1() ami.HandlerFunc {
 		// Calculate resolution time
 		log.Printf("[%d] %s in %v for group r2", c.StatusCode, c.Req.RequestURI, time.Since(t))
 	}
+}
+
+func formatAsDate(t time.Time) string {
+	year, month, day := t.Date()
+	return fmt.Sprintf("%d-%02d-%02d", year, month, day)
 }

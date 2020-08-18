@@ -2,6 +2,7 @@ package ami
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"path"
@@ -31,6 +32,10 @@ type (
 		router *router
 		// Engine拥有所有的route-group
 		groups []*RouterGroup
+
+		// 模板渲染
+		htmlTemplates *template.Template
+		funcMap       template.FuncMap
 	}
 )
 
@@ -119,9 +124,18 @@ func (engine *Engine) Run(addr string) (err error) {
 	return http.ListenAndServe(addr, engine)
 }
 
+// 模板加载进内存
+func (engine *Engine) SetFuncMap(funcMap template.FuncMap) {
+	engine.funcMap = funcMap
+}
+
+// 所有模板渲染函数
+func (engine *Engine) LoadHTMLGlob(pattern string) {
+	engine.htmlTemplates = template.Must(template.New("").Funcs(engine.funcMap).ParseGlob(pattern))
+}
+
 // 生成上下文
 // 把上下文传输给路由管理
-
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var middlewares []HandlerFunc
 
@@ -131,9 +145,8 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			middlewares = append(middlewares, group.middlewares...)
 		}
 	}
-
 	c := newContext(w, r)
 	c.handlers = middlewares
+	c.engine = engine
 	engine.router.handle(c)
-
 }

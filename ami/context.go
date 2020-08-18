@@ -19,6 +19,9 @@ type Context struct {
 	// middleware
 	handlers []HandlerFunc
 	index    int
+
+	//模板
+	engine *Engine
 }
 
 func newContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -89,9 +92,18 @@ func (c *Context) Data(code int, data []byte) {
 }
 
 // HTML直接以二进制进行 输出
-func (c *Context) HTML(code int, html string) {
+func (c *Context) HTML(code int, name string, data interface{}) {
 	c.SetHeader("Content-Type", "text/html")
 	c.Status(code)
 	// TODO HTML error handle
-	_, _ = c.Writer.Write([]byte(html))
+	if err := c.engine.htmlTemplates.ExecuteTemplate(c.Writer, name, data); err != nil {
+		c.Fail(500, err.Error())
+	}
+	//_, _ = c.Writer.Write([]byte(html))
+}
+
+// Fail
+func (c *Context) Fail(code int, err string) {
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
 }
