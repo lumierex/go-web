@@ -2,7 +2,9 @@ package main
 
 import (
 	"ami"
+	"log"
 	"net/http"
+	"time"
 )
 
 func main() {
@@ -64,36 +66,66 @@ func main() {
 	//})
 	//_ = r.Run(":9999")
 
-	r := ami.New()
-	r.GET("/index", func(c *ami.Context) {
-		c.HTML(http.StatusOK, "<h1>Index Page</h1>")
-	})
-	v1 := r.Group("/v1")
-	{
-		v1.GET("/", func(c *ami.Context) {
-			c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
-		})
+	//r := ami.New()
+	//r.GET("/index", func(c *ami.Context) {
+	//	c.HTML(http.StatusOK, "<h1>Index Page</h1>")
+	//})
+	//v1 := r.Group("/v1")
+	//{
+	//	v1.GET("/", func(c *ami.Context) {
+	//		c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
+	//	})
+	//
+	//	v1.GET("/hello", func(c *ami.Context) {
+	//		// expect /hello?name=amiktutu
+	//		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Path)
+	//	})
+	//}
+	//v2 := r.Group("/v2")
+	//{
+	//	v2.GET("/hello/:name", func(c *ami.Context) {
+	//		// expect /hello/amiktutu
+	//		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Param("name"), c.Path)
+	//	})
+	//	v2.POST("/login", func(c *ami.Context) {
+	//		c.JSON(http.StatusOK, ami.H{
+	//			"username": c.PostForm("username"),
+	//			"password": c.PostForm("password"),
+	//		})
+	//	})
+	//
+	//}
+	//
+	//_ = r.Run(":9999")
 
-		v1.GET("/hello", func(c *ami.Context) {
-			// expect /hello?name=amiktutu
-			c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Path)
-		})
-	}
+	// 中间件
+	r := ami.New()
+	r.Use(ami.Logger())
+
+	r.GET("/", func(c *ami.Context) {
+		c.HTML(http.StatusOK, "<h1>Hello AMI</h1>")
+	})
+
 	v2 := r.Group("/v2")
+	v2.Use(onlyForR1())
 	{
 		v2.GET("/hello/:name", func(c *ami.Context) {
-			// expect /hello/amiktutu
+			// expect /hello/geektutu
 			c.String(http.StatusOK, "hello %s, you're at %s\n", c.Param("name"), c.Path)
 		})
-		v2.POST("/login", func(c *ami.Context) {
-			c.JSON(http.StatusOK, ami.H{
-				"username": c.PostForm("username"),
-				"password": c.PostForm("password"),
-			})
-		})
-
 	}
 
 	_ = r.Run(":9999")
 
+}
+
+func onlyForR1() ami.HandlerFunc {
+	return func(c *ami.Context) {
+		// Start timer
+		t := time.Now()
+		//// if a server error occurred
+		//log.Fatal(500, "Internal Server Error")
+		// Calculate resolution time
+		log.Printf("[%d] %s in %v for group r2", c.StatusCode, c.Req.RequestURI, time.Since(t))
+	}
 }
