@@ -1,21 +1,30 @@
 package session
 
 import (
-	"ami-orm/log"
+	"amiorm/dialect"
+	"amiorm/log"
+	"amiorm/schema"
 	"database/sql"
 	"strings"
 )
 
 type Session struct {
 	// sql.Open() 返回的句柄
-	db      *sql.DB
+	db *sql.DB
+
+	dialect  dialect.Dialect
+	refTable *schema.Schema
+
 	sql     strings.Builder
 	sqlVars []interface{}
 }
 
 // 创建Session
-func New(db *sql.DB) *Session {
-	return &Session{db: db}
+func New(db *sql.DB, dialect dialect.Dialect) *Session {
+	return &Session{
+		db:      db,
+		dialect: dialect,
+	}
 }
 
 // 清除session

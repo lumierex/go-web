@@ -1,4 +1,4 @@
-module "ami-orm"
+module "amiorm"
 
 go 1.14
 
