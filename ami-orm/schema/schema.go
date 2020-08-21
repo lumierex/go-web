@@ -67,3 +67,16 @@ func Parse(dest interface{}, d dialect.Dialect) *Schema {
 	}
 	return schema
 }
+
+// &User{Name:"hi", Age: 18}  ->  ("hi", 18)
+func (schema *Schema) RecordValues(dest interface{}) []interface{} {
+	destValue := reflect.Indirect(reflect.ValueOf(dest))
+	var fieldValues []interface{}
+	for _, field := range schema.Fields {
+		// 通过结构体拿到field的值
+		fieldValues = append(fieldValues, destValue.FieldByName(field.Name).Interface())
+	}
+	return fieldValues
+}
+
+// schema

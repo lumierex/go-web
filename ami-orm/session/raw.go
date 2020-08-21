@@ -1,6 +1,7 @@
 package session
 
 import (
+	"amiorm/clause"
 	"amiorm/dialect"
 	"amiorm/log"
 	"amiorm/schema"
@@ -14,9 +15,9 @@ type Session struct {
 
 	dialect  dialect.Dialect
 	refTable *schema.Schema
-
-	sql     strings.Builder
-	sqlVars []interface{}
+	clause   clause.Clause
+	sql      strings.Builder
+	sqlVars  []interface{}
 }
 
 // 创建Session
@@ -32,6 +33,8 @@ func (s *Session) Clear() {
 	//  清空strings.Builder
 	s.sql.Reset()
 	s.sqlVars = nil
+
+	s.clause = clause.Clause{}
 }
 
 // 获取db句柄
